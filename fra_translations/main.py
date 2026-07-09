@@ -23,7 +23,23 @@ def save_scores(path: str, scores: Dict[str, int]) -> None:
         json.dump(scores, fh, ensure_ascii=False, indent=2)
 
 
-def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", ignore_case: bool = False, allow_multiword: bool = False) -> None:
+def load_pool(path: str) -> list:
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, 'r', encoding='utf-8') as fh:
+            return json.load(fh)
+    except Exception:
+        return []
+
+
+def save_pool(path: str, pool: list) -> None:
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as fh:
+        json.dump(pool, fh, ensure_ascii=False, indent=2)
+
+
+def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", ignore_case: bool = False, allow_multiword: bool = False, pool_path: str = "data/pool.json", pool_size: int = 10) -> None:
     """Run an interactive quiz: show a random French phrase and ask for exact English translation.
 
     Each French entry has a score persisted to `scores_path`.
@@ -54,9 +70,30 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
             keys = single_keys
     else:
         keys = list(mapping.keys())
+
+    # Load or initialize pool: persistent list of phrases to propose
+    pool = load_pool(pool_path)
+    # Validate pool: keep only keys that still exist and have score < 5 or keep anyway
+    pool = [k for k in pool if k in keys]
+    # fill pool up to pool_size with lowest-scored candidates not already in pool
+    candidates = [k for k in keys if k not in pool]
+    # load scores to pick low-score candidates
+    scores = load_scores(scores_path)
+    # ensure scores keys exist
+    for fra in keys:
+        scores.setdefault(fra, 0)
+    # sort candidates by score ascending
+    candidates.sort(key=lambda x: int(scores.get(x, 0)))
+    while len(pool) < min(pool_size, len(keys)) and candidates:
+        pool.append(candidates.pop(0))
+    # if pool ends up empty, fallback to keys
+    if not pool:
+        pool = keys
+    # save initial pool
+    save_pool(pool_path, pool)
     try:
         while True:
-            fra = random.choice(keys)
+            fra = random.choice(pool)
             answers = mapping.get(fra, [])
             print('\nTranslate:')
             print(fra)
@@ -83,6 +120,21 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
                 save_scores(scores_path, scores)
                 print('Correct!')
                 print(f"Score for '{fra}': {scores[fra]}")
+                # if score reached threshold, remove from pool and add replacement
+                if scores[fra] >= 5:
+                    try:
+                        pool.remove(fra)
+                        # find replacement among candidates not in pool and score < 5
+                        remaining = [k for k in keys if k not in pool and k != fra]
+                        remaining.sort(key=lambda x: int(scores.get(x, 0)))
+                        if remaining:
+                            pool.append(remaining[0])
+                            print(f"'{fra}' reached score >=5 and was removed from the pool. Added '{remaining[0]}' to the pool.")
+                        else:
+                            print(f"'{fra}' reached score >=5 and was removed from the pool. No replacement available.")
+                    except ValueError:
+                        pass
+                    save_pool(pool_path, pool)
             else:
                 scores[fra] = 0
                 save_scores(scores_path, scores)
@@ -103,8 +155,10 @@ def _main(argv=None):
     p.add_argument('--scores', default='data/scores.json', help='path to scores JSON file')
     p.add_argument('--ignore-case', action='store_true', help='match answers case-insensitively')
     p.add_argument('--allow-multiword', action='store_true', help='allow multi-word French entries (default: only single-word entries)')
+    p.add_argument('--pool', default='data/pool.json', help='path to persistent pool file')
+    p.add_argument('--pool-size', default=10, type=int, help='number of words kept in the pool')
     args = p.parse_args(argv)
-    run_quiz(args.tsv, args.scores, args.ignore_case, args.allow_multiword)
+    run_quiz(args.tsv, args.scores, args.ignore_case, args.allow_multiword, pool_size=args.pool_size, pool_path=args.pool)
 
 
 if __name__ == "__main__":
