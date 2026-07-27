@@ -1,0 +1,75 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.learnvocab"
+4    android:versionCode="1"
+5    android:versionName="0.1" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="34" />
+10
+11    <permission
+11-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:22:5-24:47
+12        android:name="com.learnvocab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+12-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:23:9-81
+13        android:protectionLevel="signature" />
+13-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:24:9-44
+14
+15    <uses-permission android:name="com.learnvocab.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+15-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:26:5-97
+15-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:26:22-94
+16
+17    <application
+17-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:4:5-15:19
+18        android:allowBackup="true"
+18-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:5:9-35
+19        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+19-->[androidx.core:core:1.10.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/fccd5a130a2453b2391b562060345eaf/transformed/core-1.10.1/AndroidManifest.xml:28:18-86
+20        android:debuggable="true"
+21        android:extractNativeLibs="false"
+22        android:label="LearnVocab"
+22-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:6:9-35
+23        android:theme="@style/Theme.AppCompat.Light.NoActionBar" >
+23-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:7:9-65
+24        <activity
+24-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:8:9-14:20
+25            android:name="com.learnvocab.MainActivity"
+25-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:8:19-61
+26            android:exported="true" >
+26-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:9:13-36
+27            <intent-filter>
+27-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:10:13-13:29
+28                <action android:name="android.intent.action.MAIN" />
+28-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:11:17-69
+28-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:11:25-66
+29
+30                <category android:name="android.intent.category.LAUNCHER" />
+30-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:12:17-77
+30-->/home/jacquemier/Working_dir/Perso/english-vocabulary/android_app/app/src/main/AndroidManifest.xml:12:27-74
+31            </intent-filter>
+32        </activity>
+33
+34        <provider
+34-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+35            android:name="androidx.startup.InitializationProvider"
+35-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:25:13-67
+36            android:authorities="com.learnvocab.androidx-startup"
+36-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:26:13-68
+37            android:exported="false" >
+37-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:27:13-37
+38            <meta-data
+38-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+39                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+39-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:30:17-75
+40                android:value="androidx.startup" />
+40-->[androidx.emoji2:emoji2:1.2.0] /home/jacquemier/.gradle/caches/9.3.0/transforms/cff62e068867799576f10ddb0d44a85c/transformed/emoji2-1.2.0/AndroidManifest.xml:31:17-49
+41            <meta-data
+41-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/c8b26908c08ee8d9c81f178b41036ddb/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:31:13-33:52
+42                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+42-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/c8b26908c08ee8d9c81f178b41036ddb/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:32:17-78
+43                android:value="androidx.startup" />
+43-->[androidx.lifecycle:lifecycle-process:2.4.1] /home/jacquemier/.gradle/caches/9.3.0/transforms/c8b26908c08ee8d9c81f178b41036ddb/transformed/lifecycle-process-2.4.1/AndroidManifest.xml:33:17-49
+44        </provider>
+45    </application>
+46
+47</manifest>

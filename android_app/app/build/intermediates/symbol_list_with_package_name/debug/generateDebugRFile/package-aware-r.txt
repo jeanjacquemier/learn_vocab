@@ -1,0 +1,6 @@
+com.learnvocab
+id feedbackText
+id fraText
+id input
+id submitBtn
+layout activity_main

@@ -1,0 +1,5 @@
+Hello	Bonjour
+Goodbye	Au revoir
+Thank you	Merci
+Yes	Oui
+No	Non

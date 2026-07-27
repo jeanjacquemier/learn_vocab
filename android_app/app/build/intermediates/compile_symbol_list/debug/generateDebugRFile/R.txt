@@ -1,0 +1,5 @@
+int id feedbackText 0x0
+int id fraText 0x0
+int id input 0x0
+int id submitBtn 0x0
+int layout activity_main 0x0

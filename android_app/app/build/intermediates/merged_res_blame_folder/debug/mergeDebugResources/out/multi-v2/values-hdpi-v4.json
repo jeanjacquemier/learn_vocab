@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.learnvocab.app-mergeDebugResources-25:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/jacquemier/.gradle/caches/9.3.0/transforms/9a1f1eb6aee347ff11a3be6fab6c1116/transformed/appcompat-1.6.1/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    }
+                }
+            ]
+        }
+    ]
+}
