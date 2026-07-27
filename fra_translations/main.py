@@ -97,7 +97,7 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
             fra = random.choice(pool)
             answers = mapping.get(fra, [])
             #print('\nTranslate:')
-            print(f'\nTranslate: {fra}')
+            print(f'\nTranslate: {fra} {scores[fra]}/5')
             user = input('Your translation (or q to quit): ').strip()
             if not user:
                 print('Please type a translation or q to quit.')
@@ -125,7 +125,7 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
                 scores[fra] = int(scores.get(fra, 0)) + 1
                 save_scores(scores_path, scores)
                 print('Correct!')
-                print(f"Score for '{fra}': {scores[fra]}")
+                print(f"Score for '{fra}': {scores[fra]}/5")
                 # if score reached threshold, remove from pool and add replacement
                 if scores[fra] >= 5:
                     try:
