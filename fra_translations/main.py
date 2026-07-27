@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import random
+import unicodedata
 from typing import Dict
 
 
@@ -39,7 +40,7 @@ def save_pool(path: str, pool: list) -> None:
         json.dump(pool, fh, ensure_ascii=False, indent=2)
 
 
-def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", ignore_case: bool = False, allow_multiword: bool = False, pool_path: str = "data/pool.json", pool_size: int = 10) -> None:
+def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", case_sensitive: bool = False, allow_multiword: bool = False, pool_path: str = "data/pool.json", pool_size: int = 10) -> None:
     """Run an interactive quiz: show a random French phrase and ask for exact English translation.
 
     Each French entry has a score persisted to `scores_path`.
@@ -104,15 +105,20 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
             if user.lower() in ("q", "quit"):
                 break
             total += 1
-            match_found = False
-            if ignore_case:
-                u = user.casefold()
-                answers_cf = [a.casefold() for a in answers]
-                if u in answers_cf:
-                    match_found = True
-            else:
-                if user in answers:
-                    match_found = True
+            # Normalize user input and answers: strip, optionally casefold, and allow
+            # omission of final punctuation (strip trailing Unicode punctuation).
+            def normalize(s: str) -> str:
+                s = s.strip()
+                # remove trailing punctuation characters
+                while s and unicodedata.category(s[-1]).startswith('P'):
+                    s = s[:-1]
+                if not case_sensitive:
+                    s = s.casefold()
+                return s
+
+            u_norm = normalize(user)
+            answers_norm = [normalize(a) for a in answers]
+            match_found = u_norm in answers_norm
 
             if match_found:
                 correct += 1
@@ -153,12 +159,12 @@ def _main(argv=None):
     p = argparse.ArgumentParser(description='French->English quiz')
     p.add_argument('tsv', nargs='?', default='data/fra.txt', help='path to the TSV file')
     p.add_argument('--scores', default='data/scores.json', help='path to scores JSON file')
-    p.add_argument('--ignore-case', action='store_true', help='match answers case-insensitively')
+    p.add_argument('--case-sensitive', action='store_true', help='match answers case-insensitively')
     p.add_argument('--allow-multiword', action='store_true', help='allow multi-word French entries (default: only single-word entries)')
     p.add_argument('--pool', default='data/pool.json', help='path to persistent pool file')
     p.add_argument('--pool-size', default=10, type=int, help='number of words kept in the pool')
     args = p.parse_args(argv)
-    run_quiz(args.tsv, args.scores, args.ignore_case, args.allow_multiword, pool_size=args.pool_size, pool_path=args.pool)
+    run_quiz(args.tsv, args.scores, args.case_sensitive, args.allow_multiword, pool_size=args.pool_size, pool_path=args.pool)
 
 
 if __name__ == "__main__":
