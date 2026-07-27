@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>French -> English quiz</title>
+    <style>
+      body { font-family: sans-serif; margin: 2rem; }
+      .card { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; }
+      .fra { font-size: 1.4rem; font-weight: bold; }
+      .status { margin-top: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>French → English</h1>
+      {% if correct is defined %}
+        <div class="status">{% if correct %}<strong style="color:green">Correct!</strong>{% else %}<strong style="color:red">Incorrect</strong>{% endif %}</div>
+        {% if expected %}
+          <div>Expected:</div>
+          <ul>
+            {% for a in expected %}
+              <li>{{ a }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <hr />
+      {% endif %}
+
+      <div class="fra">{{ fra }} — Score: {{ score }}/5</div>
+
+      <form action="/answer" method="post">
+        <input type="hidden" name="fra" value="{{ fra }}" />
+        <p>
+          <label for="user_answer">Your translation</label><br />
+          <input id="user_answer" name="user_answer" autofocus style="width:100%" />
+        </p>
+        <p>
+          <button type="submit">Submit</button>
+          <a href="/">Skip</a>
+        </p>
+      </form>
+    </div>
+  </body>
+</html>

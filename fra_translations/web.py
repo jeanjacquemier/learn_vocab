@@ -1,0 +1,147 @@
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from typing import Dict, List
+import random
+import unicodedata
+import json
+import os
+
+from .parser import parse_file
+
+app = FastAPI(title="French -> English Quiz")
+
+BASE_DIR = os.path.dirname(__file__)
+PKG_DIR = BASE_DIR
+DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), 'data')
+
+scores_path = os.path.join(DATA_DIR, 'scores.json')
+pool_path = os.path.join(DATA_DIR, 'pool.json')
+text_path = os.path.join(DATA_DIR, 'fra.txt')
+
+templates = Jinja2Templates(directory=os.path.join(PKG_DIR, 'templates'))
+
+
+def load_scores(path: str) -> Dict[str, int]:
+    if not os.path.exists(path):
+        return {}
+    try:
+        with open(path, 'r', encoding='utf-8') as fh:
+            return json.load(fh)
+    except Exception:
+        return {}
+
+
+def save_scores(path: str, scores: Dict[str, int]) -> None:
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as fh:
+        json.dump(scores, fh, ensure_ascii=False, indent=2)
+
+
+def load_pool(path: str) -> list:
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, 'r', encoding='utf-8') as fh:
+            return json.load(fh)
+    except Exception:
+        return []
+
+
+def save_pool(path: str, pool: list) -> None:
+    os.makedirs(os.path.dirname(path) or '.', exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as fh:
+        json.dump(pool, fh, ensure_ascii=False, indent=2)
+
+
+def normalize(s: str, case_sensitive: bool = False) -> str:
+    s = (s or '').strip()
+    # remove trailing punctuation characters
+    while s and unicodedata.category(s[-1]).startswith('P'):
+        s = s[:-1]
+    if not case_sensitive:
+        s = s.casefold()
+    return s
+
+
+@app.on_event('startup')
+def startup_event():
+    # load mapping and ensure data directory exists
+    app.state.mapping = parse_file(text_path)
+    app.state.keys = list(app.state.mapping.keys())
+    app.state.scores = load_scores(scores_path)
+    for k in app.state.keys:
+        app.state.scores.setdefault(k, 0)
+    app.state.pool = load_pool(pool_path)
+    # validate pool
+    app.state.pool = [k for k in app.state.pool if k in app.state.keys]
+    candidates = [k for k in app.state.keys if k not in app.state.pool]
+    candidates.sort(key=lambda x: int(app.state.scores.get(x, 0)))
+    while len(app.state.pool) < min(10, len(app.state.keys)) and candidates:
+        app.state.pool.append(candidates.pop(0))
+    if not app.state.pool:
+        app.state.pool = app.state.keys
+    save_pool(pool_path, app.state.pool)
+    save_scores(scores_path, app.state.scores)
+
+
+@app.get('/', response_class=HTMLResponse)
+def index(request: Request):
+    fra = random.choice(app.state.pool)
+    tmpl = templates.env.get_template('index.html')
+    content = tmpl.render({
+        'request': request,
+        'fra': fra,
+        'score': app.state.scores.get(fra, 0),
+    })
+    return HTMLResponse(content)
+
+
+@app.post('/answer', response_class=HTMLResponse)
+def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...)):
+    mapping: Dict[str, List[str]] = app.state.mapping
+    answers = mapping.get(fra, [])
+    u_norm = normalize(user_answer)
+    answers_norm = [normalize(a) for a in answers]
+    correct = u_norm in answers_norm
+    # update scores
+    if correct:
+        app.state.scores[fra] = int(app.state.scores.get(fra, 0)) + 1
+        # if score >= 5 remove from pool and try to add replacement
+        if app.state.scores[fra] >= 5:
+            try:
+                app.state.pool.remove(fra)
+                remaining = [k for k in app.state.keys if k not in app.state.pool and k != fra]
+                remaining.sort(key=lambda x: int(app.state.scores.get(x, 0)))
+                if remaining:
+                    app.state.pool.append(remaining[0])
+            except ValueError:
+                pass
+    else:
+        app.state.scores[fra] = 0
+    save_scores(scores_path, app.state.scores)
+    save_pool(pool_path, app.state.pool)
+    # choose next phrase to show (avoid repeating same phrase when possible)
+    pool = app.state.pool
+    if pool:
+        if len(pool) > 1:
+            next_candidates = [k for k in pool if k != fra]
+            next_fra = random.choice(next_candidates)
+        else:
+            next_fra = pool[0]
+    else:
+        next_fra = fra
+
+    tmpl = templates.env.get_template('index.html')
+    content = tmpl.render({
+        'request': request,
+        # show new phrase
+        'fra': next_fra,
+        'score': app.state.scores.get(next_fra, 0),
+        # still show feedback about the previous answer
+        'correct': correct,
+        'expected': answers,
+    })
+    return HTMLResponse(content)
+
+#*** End Patch

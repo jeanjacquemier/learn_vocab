@@ -6,6 +6,9 @@ authors = ["Auto Generated <you@example.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+fastapi = "^0.95"
+uvicorn = {version = "^0.22", extras = ["standard"]}
+jinja2 = "^3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0"
