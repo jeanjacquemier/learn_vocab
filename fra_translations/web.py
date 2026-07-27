@@ -76,11 +76,14 @@ def startup_event():
     # validate pool
     app.state.pool = [k for k in app.state.pool if k in app.state.keys]
     candidates = [k for k in app.state.keys if k not in app.state.pool]
-    candidates.sort(key=lambda x: int(app.state.scores.get(x, 0)))
-    while len(app.state.pool) < min(10, len(app.state.keys)) and candidates:
-        app.state.pool.append(candidates.pop(0))
+    # choose random candidates to fill the pool rather than always the lowest-scored
+    needed = min(10, len(app.state.keys)) - len(app.state.pool)
+    if candidates and needed > 0:
+        pick = random.sample(candidates, k=min(needed, len(candidates)))
+        app.state.pool.extend(pick)
     if not app.state.pool:
-        app.state.pool = app.state.keys
+        # initialize with a random order of keys instead of the original order
+        app.state.pool = random.sample(app.state.keys, k=len(app.state.keys)) if app.state.keys else []
     save_pool(pool_path, app.state.pool)
     save_scores(scores_path, app.state.scores)
 
@@ -114,9 +117,9 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
             try:
                 app.state.pool.remove(fra)
                 remaining = [k for k in app.state.keys if k not in app.state.pool and k != fra]
-                remaining.sort(key=lambda x: int(app.state.scores.get(x, 0)))
+                # pick a random replacement when possible
                 if remaining:
-                    app.state.pool.append(remaining[0])
+                    app.state.pool.append(random.choice(remaining))
             except ValueError:
                 pass
     else:
