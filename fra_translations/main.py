@@ -96,8 +96,8 @@ def run_quiz(path: str = "data/fra.txt", scores_path: str = "data/scores.json", 
         while True:
             fra = random.choice(pool)
             answers = mapping.get(fra, [])
-            print('\nTranslate:')
-            print(fra)
+            #print('\nTranslate:')
+            print(f'\nTranslate: {fra}')
             user = input('Your translation (or q to quit): ').strip()
             if not user:
                 print('Please type a translation or q to quit.')
