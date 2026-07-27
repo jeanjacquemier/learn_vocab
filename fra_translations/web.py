@@ -93,6 +93,8 @@ def index(request: Request):
         'request': request,
         'fra': fra,
         'score': app.state.scores.get(fra, 0),
+        'pool': app.state.pool,
+        'scores': app.state.scores,
     })
     return HTMLResponse(content)
 
@@ -141,6 +143,8 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
         # still show feedback about the previous answer
         'correct': correct,
         'expected': answers,
+        'pool': app.state.pool,
+        'scores': app.state.scores,
     })
     return HTMLResponse(content)
 

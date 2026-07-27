@@ -11,34 +11,47 @@
     </style>
   </head>
   <body>
-    <div class="card">
-      <h1>French → English</h1>
-      {% if correct is defined %}
-        <div class="status">{% if correct %}<strong style="color:green">Correct!</strong>{% else %}<strong style="color:red">Incorrect</strong>{% endif %}</div>
-        {% if expected %}
-          <div>Expected:</div>
-          <ul>
-            {% for a in expected %}
-              <li>{{ a }}</li>
-            {% endfor %}
-          </ul>
+    <div style="display: flex; gap: 1rem; align-items: flex-start;">
+      <div class="card" style="flex: 1;">
+        <h1>French → English</h1>
+        {% if correct is defined %}
+          <div class="status">{% if correct %}<strong style="color:green">Correct!</strong>{% else %}<strong style="color:red">Incorrect</strong>{% endif %}</div>
+          {% if expected %}
+            <div>Expected:</div>
+            <ul>
+              {% for a in expected %}
+                <li>{{ a }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          <hr />
         {% endif %}
-        <hr />
-      {% endif %}
 
-      <div class="fra">{{ fra }} — Score: {{ score }}/5</div>
+        <div class="fra">{{ fra }} — Score: {{ score }}/5</div>
 
-      <form action="/answer" method="post">
-        <input type="hidden" name="fra" value="{{ fra }}" />
-        <p>
-          <label for="user_answer">Your translation</label><br />
-          <input id="user_answer" name="user_answer" autofocus style="width:100%" />
-        </p>
-        <p>
-          <button type="submit">Submit</button>
-          <a href="/">Skip</a>
-        </p>
-      </form>
+        <form action="/answer" method="post">
+          <input type="hidden" name="fra" value="{{ fra }}" />
+          <p>
+            <label for="user_answer">Your translation</label><br />
+            <input id="user_answer" name="user_answer" autofocus style="width:100%" />
+          </p>
+          <p>
+            <button type="submit">Submit</button>
+            <a href="/">Skip</a>
+          </p>
+        </form>
+      </div>
+
+      <aside style="width:240px;">
+        <div style="border:1px solid #ddd; border-radius:6px; padding:8px;">
+          <h3>Pool ({{ pool|length }})</h3>
+          <ol>
+            {% for p in pool %}
+              <li{% if p == fra %} style="font-weight:bold"{% endif %}>{{ p }} ({{ scores.get(p, 0) }}/5)</li>
+            {% endfor %}
+          </ol>
+        </div>
+      </aside>
     </div>
   </body>
 </html>

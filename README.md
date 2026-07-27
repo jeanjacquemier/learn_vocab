@@ -21,3 +21,6 @@ mapping = parse_file('data/fra.txt')
 print(mapping.get('Bonjour !'))
 
 Or use the CLI (not yet added) to dump JSON.
+
+Web interface
+uvicorn fra_translations.web:app --reload
