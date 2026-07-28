@@ -20,7 +20,7 @@
             <div>Expected:</div>
             <ul>
               {% for a in expected %}
-                <li>{{ a }}</li>
+                <li><strong style="color:green">{{ a }}</strong></li>
               {% endfor %}
             </ul>
           {% endif %}
@@ -29,11 +29,11 @@
 
         <div class="fra">{{ fra }} — Score: {{ score }}/5</div>
 
-        <form action="/answer" method="post">
+        <form action="/answer" method="post" autocomplete="off">
           <input type="hidden" name="fra" value="{{ fra }}" />
           <p>
             <label for="user_answer">Your translation</label><br />
-            <input id="user_answer" name="user_answer" autofocus style="width:100%" />
+            <input id="user_answer" name="user_answer" value="" autofocus style="width:100%" autocomplete="off" />
           </p>
           <p>
             <button type="submit">Submit</button>
