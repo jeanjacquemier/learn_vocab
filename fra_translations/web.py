@@ -17,7 +17,7 @@ DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), 'data')
 
 scores_path = os.path.join(DATA_DIR, 'scores.json')
 pool_path = os.path.join(DATA_DIR, 'pool.json')
-text_path = os.path.join(DATA_DIR, 'fra_test.txt')
+text_path = os.path.join(DATA_DIR, 'fra.txt')
 
 templates = Jinja2Templates(directory=os.path.join(PKG_DIR, 'templates'))
 
@@ -63,11 +63,19 @@ def normalize(s: str, case_sensitive: bool = False) -> str:
         s = s.casefold()
     return s
 
+def load_translations(path: str, limit: int = 100) -> Dict[str, List[str]]:
+    mapping = parse_file(path)
+    filtered = {}
+    # ensure all values are lists
+    for k, v in mapping.items():
+        if len(k.split()) <= limit:
+            filtered[k] = v
+    return filtered
 
 @app.on_event('startup')
 def startup_event():
     # load mapping and ensure data directory exists
-    app.state.mapping = parse_file(text_path)
+    app.state.mapping = load_translations(text_path, 3)
     app.state.keys = list(app.state.mapping.keys())
     app.state.scores = load_scores(scores_path)
     for k in app.state.keys:
@@ -129,7 +137,9 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
     # choose next phrase to show (avoid repeating same phrase when possible)
     pool = app.state.pool
     if pool:
-        if len(pool) > 1:
+        if not correct:
+            next_fra = fra
+        elif len(pool) > 1:
             next_candidates = [k for k in pool if k != fra]
             next_fra = random.choice(next_candidates)
         else:
