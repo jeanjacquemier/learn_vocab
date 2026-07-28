@@ -146,6 +146,7 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
         # still show feedback about the previous answer
         'correct': correct,
         'expected': answers,
+        'user_answer': user_answer,
         'pool': app.state.pool,
         'scores': app.state.scores,
     })

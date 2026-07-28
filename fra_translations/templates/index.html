@@ -15,7 +15,7 @@
       <div class="card" style="flex: 1;">
         <h1>French → English</h1>
         {% if correct is defined %}
-          <div class="status">{% if correct %}<strong style="color:green">Correct!</strong>{% else %}<strong style="color:red">Incorrect</strong>{% endif %}</div>
+          <div class="status">{% if correct %}<strong style="color:green">Correct!</strong>{% else %}<strong style="color:red">Incorrect</strong>{% if user_answer %} — your answer: <em>{{ user_answer }}</em>{% endif %}{% endif %}</div>
           {% if expected %}
             <div>Expected:</div>
             <ul>
