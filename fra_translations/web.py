@@ -17,7 +17,7 @@ DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), 'data')
 
 scores_path = os.path.join(DATA_DIR, 'scores.json')
 pool_path = os.path.join(DATA_DIR, 'pool.json')
-text_path = os.path.join(DATA_DIR, 'fra.txt')
+text_path = os.path.join(DATA_DIR, 'fra_test.txt')
 
 templates = Jinja2Templates(directory=os.path.join(PKG_DIR, 'templates'))
 
@@ -74,8 +74,8 @@ def startup_event():
         app.state.scores.setdefault(k, 0)
     app.state.pool = load_pool(pool_path)
     # validate pool
-    app.state.pool = [k for k in app.state.pool if k in app.state.keys]
-    candidates = [k for k in app.state.keys if k not in app.state.pool]
+    app.state.pool = [k for k in app.state.pool if k in app.state.keys and app.state.scores.get(k, 0) < 5]
+    candidates = [k for k in app.state.keys if k not in app.state.pool and app.state.scores.get(k, 0) < 5]
     # choose random candidates to fill the pool rather than always the lowest-scored
     needed = min(10, len(app.state.keys)) - len(app.state.pool)
     if candidates and needed > 0:
@@ -89,7 +89,7 @@ def startup_event():
 
 
 @app.get('/', response_class=HTMLResponse)
-def index(request: Request):
+def index(request: Request):    
     fra = random.choice(app.state.pool)
     tmpl = templates.env.get_template('index.html')
     content = tmpl.render({
