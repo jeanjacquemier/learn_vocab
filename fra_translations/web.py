@@ -19,6 +19,7 @@ scores_path = os.path.join(DATA_DIR, 'scores.json')
 pool_path = os.path.join(DATA_DIR, 'pool.json')
 text_path = os.path.join(DATA_DIR, 'fra.txt')
 
+
 templates = Jinja2Templates(directory=os.path.join(PKG_DIR, 'templates'))
 
 
@@ -97,21 +98,32 @@ def startup_event():
 
 
 @app.get('/', response_class=HTMLResponse)
-def index(request: Request):    
-    fra = random.choice(app.state.pool)
+def index(request: Request, pool_size: int = 10):
+    # construct a view of the pool limited to pool_size
+    pool = list(app.state.pool)
+    pool_view = list(pool[:pool_size]) if pool_size else list(pool)
+    if pool_size and len(pool_view) < pool_size:
+        # fill with random candidates (score < 5)
+        candidates = [k for k in app.state.keys if k not in pool_view and app.state.scores.get(k, 0) < 5]
+        if candidates:
+            needed = min(pool_size - len(pool_view), len(candidates))
+            pool_view.extend(random.sample(candidates, k=needed))
+
+    fra = random.choice(pool_view) if pool_view else (random.choice(app.state.keys) if app.state.keys else None)
     tmpl = templates.env.get_template('index.html')
     content = tmpl.render({
         'request': request,
         'fra': fra,
         'score': app.state.scores.get(fra, 0),
-        'pool': app.state.pool,
+        'pool': pool_view,
         'scores': app.state.scores,
+        'pool_size': pool_size,
     })
     return HTMLResponse(content)
 
 
 @app.post('/answer', response_class=HTMLResponse)
-def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...)):
+def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...), pool_size: int = Form(10)):
     mapping: Dict[str, List[str]] = app.state.mapping
     answers = mapping.get(fra, [])
     u_norm = normalize(user_answer)
@@ -132,6 +144,7 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
                 pass
     else:
         app.state.scores[fra] = 0
+    # persist state
     save_scores(scores_path, app.state.scores)
     save_pool(pool_path, app.state.pool)
     # choose next phrase to show (avoid repeating same phrase when possible)
@@ -147,6 +160,15 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
     else:
         next_fra = fra
 
+    # build pool view for rendering (respect pool_size from form)
+    pool = list(app.state.pool)
+    pool_view = list(pool[:pool_size]) if pool_size else list(pool)
+    if pool_size and len(pool_view) < pool_size:
+        candidates = [k for k in app.state.keys if k not in pool_view and app.state.scores.get(k, 0) < 5]
+        if candidates:
+            needed = min(pool_size - len(pool_view), len(candidates))
+            pool_view.extend(random.sample(candidates, k=needed))
+
     tmpl = templates.env.get_template('index.html')
     content = tmpl.render({
         'request': request,
@@ -157,8 +179,9 @@ def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...))
         'correct': correct,
         'expected': answers,
         'user_answer': user_answer,
-        'pool': app.state.pool,
+        'pool': pool_view,
         'scores': app.state.scores,
+        'pool_size': pool_size,
     })
     return HTMLResponse(content)
 

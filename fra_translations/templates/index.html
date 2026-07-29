@@ -6,7 +6,8 @@
     <style>
       body { font-family: sans-serif; margin: 2rem; }
       .card { max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 1rem; border-radius: 6px; }
-      .fra { font-size: 2.4rem; font-weight: bold; }
+      .score { font-size: 1.4rem; font-weight: bold;  }
+      .fra { font-size: 2.4rem; font-weight: bold; color: green;}
       .status { margin-top: 0.5rem; }
     </style>
   </head>
@@ -27,10 +28,17 @@
           <hr />
         {% endif %}
 
-        <div class="fra">{{ fra }} — Score: {{ score }}/5</div>
+        <div style="display:flex; gap:1rem; align-items:center; justify-content:space-between;">
+          <div>
+            <div class="fra">{{ fra }} </div>
+            <div class="score">Score: {{ score }}/5</div>
+          </div>
+
+        </div>
 
         <form action="/answer" method="post" autocomplete="off">
           <input type="hidden" name="fra" value="{{ fra }}" />
+          <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
           <p>
             <label for="user_answer">Your translation</label><br />
             <input id="user_answer" name="user_answer" value="" autofocus style="width:100%" autocomplete="off" />
@@ -41,9 +49,14 @@
           </p>
         </form>
       </div>
-
       <aside style="width:240px;">
         <div style="border:1px solid #ddd; border-radius:6px; padding:8px;">
+        <div>
+          <form action="/" method="get" style="margin:0">
+            <label for="pool_size">Pool size:</label>
+            <input id="pool_size" name="pool_size" type="number" min="1" max="100" value="{{ pool_size if pool_size is defined else 10 }}" onchange="this.form.submit()" style="width:6rem" />
+          </form>
+        </div>
           <h3>Pool ({{ pool|length }})</h3>
           <ol>
             {% for p in pool %}
