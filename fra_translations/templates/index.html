@@ -36,18 +36,39 @@
 
         </div>
 
-        <form action="/answer" method="post" autocomplete="off">
-          <input type="hidden" name="fra" value="{{ fra }}" />
-          <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
-          <p>
-            <label for="user_answer">Your translation</label><br />
-            <input id="user_answer" name="user_answer" value="" autofocus style="width:100%" autocomplete="off" />
-          </p>
-          <p>
-            <button type="submit">Submit</button>
-            <a href="/">Skip</a>
-          </p>
-        </form>
+        {% if confirm_needed is defined and confirm_needed %}
+          <div style="border:1px solid #f88; padding:8px; background:#fff6f6;">
+            <p>You answered: <strong>{{ pending_answer }}</strong></p>
+            <p>Are you sure to submit this as your final answer?</p>
+            <form action="/answer" method="post" style="display:inline">
+              <input type="hidden" name="fra" value="{{ fra }}" />
+              <input type="hidden" name="user_answer" value="{{ pending_answer }}" />
+              <input type="hidden" name="confirm" value="1" />
+              <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
+              <button type="submit">Yes, submit</button>
+            </form>
+            <form action="/answer" method="post" style="display:inline; margin-left:8px">
+              <input type="hidden" name="fra" value="{{ fra }}" />
+              <input type="hidden" name="user_answer" value="{{ pending_answer }}" />
+              <input type="hidden" name="edit" value="1" />
+              <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
+              <button type="submit">Edit</button>
+            </form>
+          </div>
+        {% else %}
+          <form action="/answer" method="post" autocomplete="off">
+            <input type="hidden" name="fra" value="{{ fra }}" />
+            <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
+            <p>
+              <label for="user_answer">Your translation</label><br />
+              <input id="user_answer" name="user_answer" value="{{ prefill if prefill is defined else '' }}" autofocus style="width:100%" autocomplete="off" />
+            </p>
+            <p>
+              <button type="submit">Submit</button>
+              <a href="/">Skip</a>
+            </p>
+          </form>
+        {% endif %}
       </div>
       <aside style="width:240px;">
         <div style="border:1px solid #ddd; border-radius:6px; padding:8px;">

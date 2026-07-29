@@ -123,30 +123,80 @@ def index(request: Request, pool_size: int = 10):
 
 
 @app.post('/answer', response_class=HTMLResponse)
-def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...), pool_size: int = Form(10)):
+def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...), confirm: str = Form(None), edit: str = Form(None), pool_size: int = Form(10)):
     mapping: Dict[str, List[str]] = app.state.mapping
     answers = mapping.get(fra, [])
     u_norm = normalize(user_answer)
     answers_norm = [normalize(a) for a in answers]
     correct = u_norm in answers_norm
-    # update scores
+    # handle incorrect confirmation/edit flow
     if correct:
+        # correct: increment score and possibly replace
         app.state.scores[fra] = int(app.state.scores.get(fra, 0)) + 1
-        # if score >= 5 remove from pool and try to add replacement
         if app.state.scores[fra] >= 5:
             try:
                 app.state.pool.remove(fra)
                 remaining = [k for k in app.state.keys if k not in app.state.pool and k != fra]
-                # pick a random replacement when possible
                 if remaining:
                     app.state.pool.append(random.choice(remaining))
             except ValueError:
                 pass
+        # persist on correct
+        save_scores(scores_path, app.state.scores)
+        save_pool(pool_path, app.state.pool)
     else:
+        # incorrect but check if user requested edit or confirmation
+        if edit:
+            # render page with input prefilled for correction
+            prefill = user_answer
+            # build pool_view for rendering (respect pool_size)
+            pool = list(app.state.pool)
+            pool_view = list(pool[:pool_size]) if pool_size else list(pool)
+            if pool_size and len(pool_view) < pool_size:
+                candidates = [k for k in app.state.keys if k not in pool_view and app.state.scores.get(k, 0) < 5]
+                if candidates:
+                    needed = min(pool_size - len(pool_view), len(candidates))
+                    pool_view.extend(random.sample(candidates, k=needed))
+
+            tmpl = templates.env.get_template('index.html')
+            content = tmpl.render({
+                'request': request,
+                'fra': fra,
+                'score': app.state.scores.get(fra, 0),
+                'pool': pool_view,
+                'scores': app.state.scores,
+                'prefill': prefill,
+                'pool_size': pool_size,
+            })
+            return HTMLResponse(content)
+        if not confirm:
+            # ask the user to confirm the incorrect submission
+            confirm_needed = True
+            # build pool_view for rendering (respect pool_size)
+            pool = list(app.state.pool)
+            pool_view = list(pool[:pool_size]) if pool_size else list(pool)
+            if pool_size and len(pool_view) < pool_size:
+                candidates = [k for k in app.state.keys if k not in pool_view and app.state.scores.get(k, 0) < 5]
+                if candidates:
+                    needed = min(pool_size - len(pool_view), len(candidates))
+                    pool_view.extend(random.sample(candidates, k=needed))
+
+            tmpl = templates.env.get_template('index.html')
+            content = tmpl.render({
+                'request': request,
+                'fra': fra,
+                'score': app.state.scores.get(fra, 0),
+                'pool': pool_view,
+                'scores': app.state.scores,
+                'confirm_needed': True,
+                'pending_answer': user_answer,
+                'pool_size': pool_size,
+            })
+            return HTMLResponse(content)
+        # if confirm provided, treat as final incorrect submission
         app.state.scores[fra] = 0
-    # persist state
-    save_scores(scores_path, app.state.scores)
-    save_pool(pool_path, app.state.pool)
+        save_scores(scores_path, app.state.scores)
+        save_pool(pool_path, app.state.pool)
     # choose next phrase to show (avoid repeating same phrase when possible)
     pool = app.state.pool
     if pool:
