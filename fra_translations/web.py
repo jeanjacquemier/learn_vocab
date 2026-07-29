@@ -126,6 +126,28 @@ def index(request: Request, pool_size: int = 10):
 def answer(request: Request, fra: str = Form(...), user_answer: str = Form(...), confirm: str = Form(None), edit: str = Form(None), pool_size: int = Form(10)):
     mapping: Dict[str, List[str]] = app.state.mapping
     answers = mapping.get(fra, [])
+    # reject empty answers early
+    if not user_answer or not user_answer.strip():
+        # build pool view for rendering (respect pool_size)
+        pool = list(app.state.pool)
+        pool_view = list(pool[:pool_size]) if pool_size else list(pool)
+        if pool_size and len(pool_view) < pool_size:
+            candidates = [k for k in app.state.keys if k not in pool_view and app.state.scores.get(k, 0) < 5]
+            if candidates:
+                needed = min(pool_size - len(pool_view), len(candidates))
+                pool_view.extend(random.sample(candidates, k=needed))
+        tmpl = templates.env.get_template('index.html')
+        content = tmpl.render({
+            'request': request,
+            'fra': fra,
+            'score': app.state.scores.get(fra, 0),
+            'pool': pool_view,
+            'scores': app.state.scores,
+            'prefill': '',
+            'pool_size': pool_size,
+            'error': 'Please type a translation or use Skip.'
+        })
+        return HTMLResponse(content)
     u_norm = normalize(user_answer)
     answers_norm = [normalize(a) for a in answers]
     correct = u_norm in answers_norm

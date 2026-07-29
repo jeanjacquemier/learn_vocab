@@ -61,7 +61,10 @@
             <input type="hidden" name="pool_size" value="{{ pool_size if pool_size is defined else 10 }}" />
             <p>
               <label for="user_answer">Your translation</label><br />
-              <input id="user_answer" name="user_answer" value="{{ prefill if prefill is defined else '' }}" autofocus style="width:100%" autocomplete="off" />
+              <input id="user_answer" name="user_answer" value="{{ prefill if prefill is defined else '' }}" autofocus style="width:100%" autocomplete="off" required />
+              {% if error is defined %}
+                <div style="color:darkred; margin-top:6px">{{ error }}</div>
+              {% endif %}
             </p>
             <p>
               <button type="submit">Submit</button>
